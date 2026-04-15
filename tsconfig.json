@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
 
     "target": "ES2020",
 
@@ -20,7 +20,7 @@
 
     "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src", "generated"],
   "exclude": ["node_modules", "dist"],
   "baseUrl": "./src",
   "paths": {
