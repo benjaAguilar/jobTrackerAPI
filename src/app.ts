@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import router from "./routes";
+import { errorHandler } from "./controllers/errorHandler";
 
 export const app = express();
 
@@ -11,8 +12,4 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(router);
 
-app.get("/", async (_req, res) => {
-  res.json({
-    success: true,
-  });
-});
+app.use(errorHandler);
