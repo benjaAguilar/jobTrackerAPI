@@ -1,4 +1,5 @@
 import { getValidationRes } from "../middlewares/validationResult";
+import { Services } from "../services";
 import { Request, Response, Next } from "../types/express";
 import { CustomError } from "../utils/customError";
 import { tryCatch } from "../utils/errorCatch";
@@ -12,7 +13,7 @@ export const registerUser = [
 
     const { username, email, password } = req.body;
 
-    // hashear la constrasena
+    // hash password
     bcrypt.hash(password, 10, async (err, hashedPassword) => {
       if (err || !hashedPassword) {
         return next(
@@ -21,6 +22,12 @@ export const registerUser = [
       }
 
       // create user on db
+      const { userService } = req.app.locals.services as Services;
+      await userService.create({
+        username: username,
+        password: hashedPassword,
+        email: email,
+      });
 
       res.json({
         success: true,
