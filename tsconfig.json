@@ -15,12 +15,13 @@
     "forceConsistentCasingInFileNames": true,
 
     "skipLibCheck": true,
-
     "sourceMap": true,
+
+    "types": ["node", "jest"],
 
     "resolveJsonModule": true
   },
-  "include": ["src", "generated"],
+  "include": ["src", "generated", "tests"],
   "exclude": ["node_modules", "dist"],
   "baseUrl": "./src",
   "paths": {
