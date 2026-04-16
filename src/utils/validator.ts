@@ -11,7 +11,12 @@ export const validateRegister = [
     )
     .isAlphanumeric()
     .withMessage("Username can only contain aplhanumeric caracters"),
-  body("email").trim().notEmpty().withMessage("email is required"),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("email is required")
+    .isEmail()
+    .withMessage("Use a valid email"),
   body("password")
     .trim()
     .notEmpty()
@@ -25,6 +30,10 @@ export const validateRegister = [
     .notEmpty()
     .withMessage("Repeat password is required")
     .custom((value: string, { req }) => {
+      if (!req.body) {
+        return true;
+      }
+
       if (value !== req.body.password) {
         throw new Error("Passwords do not match");
       }
