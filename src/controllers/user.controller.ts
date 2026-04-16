@@ -14,6 +14,7 @@ export const registerUser = [
     const { username, email, password } = req.body;
 
     // hash password
+    //TODO: decople bcrypt from the controller
     bcrypt.hash(password, 10, async (err, hashedPassword) => {
       if (err || !hashedPassword) {
         return next(
@@ -31,8 +32,10 @@ export const registerUser = [
 
       res.json({
         success: true,
-        message: `User ${username} created ${email}`,
+        message: `User ${username} registered`,
       });
     });
   }),
 ];
+
+//TODO: Work on login and cookies with JWT
