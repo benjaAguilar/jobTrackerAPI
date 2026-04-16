@@ -14,6 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 const services = createServices();
 app.locals.services = services;
 
-app.use(router);
+app.use("/api", router);
 
 app.use(errorHandler);
