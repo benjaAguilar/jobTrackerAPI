@@ -1,7 +1,7 @@
 import request from "supertest";
 import { app } from "../../src/app";
 
-describe("POST /api/user/register", () => {
+describe("POST /api/auth/register", () => {
   app.locals.services = {
     userService: {
       create: jest.fn(() => console.log("RICKKSAKDKA")),
@@ -10,7 +10,7 @@ describe("POST /api/user/register", () => {
 
   describe("success", () => {
     it("should create an user with valid data", async () => {
-      const res = await request(app).post("/api/user/register").send({
+      const res = await request(app).post("/api/auth/register").send({
         username: "rick",
         email: "rick@sanchez.com",
         password: "picklerick!",
@@ -25,7 +25,7 @@ describe("POST /api/user/register", () => {
 
   describe("input errors", () => {
     it("should return 400 if passwords do not match", async () => {
-      const res = await request(app).post("/api/user/register").send({
+      const res = await request(app).post("/api/auth/register").send({
         username: "rick",
         email: "rick@sanchez.com",
         password: "picklerickasd!",
@@ -39,7 +39,7 @@ describe("POST /api/user/register", () => {
     });
 
     it("should return 400 if email is not valid", async () => {
-      const res = await request(app).post("/api/user/register").send({
+      const res = await request(app).post("/api/auth/register").send({
         username: "rick",
         email: "ricks-anchez",
         password: "picklerick!",
@@ -53,13 +53,13 @@ describe("POST /api/user/register", () => {
     });
 
     it("should return 400 if no input is given", async () => {
-      const res = await request(app).post("/api/user/register");
+      const res = await request(app).post("/api/auth/register");
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
     });
 
-    it("should return 400 if username is not alphanumeric", async () => {
-      const res = await request(app).post("/api/user/register").send({
+    it("should return 400 if authname is not alphanumeric", async () => {
+      const res = await request(app).post("/api/auth/register").send({
         username: "rick$$",
         email: "rick@sanchez.com",
         password: "picklerick!",
