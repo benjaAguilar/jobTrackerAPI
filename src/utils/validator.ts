@@ -40,3 +40,11 @@ export const validateRegister = [
       return true;
     }),
 ];
+
+export const validateLogin = [
+  body("usernameOrEmail")
+    .trim()
+    .notEmpty()
+    .withMessage("Username or Email is required"),
+  body("password").trim().notEmpty().withMessage("Password is required"),
+];
