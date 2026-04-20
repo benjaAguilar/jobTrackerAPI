@@ -38,4 +38,49 @@ describe("UserService", () => {
       expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe("UserService.get()", () => {
+    it("should find an existing user with a valid username", async () => {
+      prismaMock.user.findUnique.mockResolvedValue({ id: 1 });
+
+      const user = await userService.get("validUsername");
+
+      expect(prismaMock.user.findUnique).toHaveBeenCalled();
+      expect(user).toEqual({ id: 1 });
+    });
+
+    it("should find an existing user with a valid email", async () => {
+      prismaMock.user.findUnique.mockResolvedValue({ id: 4 });
+
+      const user = await userService.get("valid@sername.as");
+
+      expect(prismaMock.user.findUnique).toHaveBeenCalled();
+      expect(user).toEqual({ id: 4 });
+    });
+
+    it("should throw an error if an user is not found", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(null);
+
+      expect(userService.get("nonExistentUser")).rejects.toThrow(
+        "User not found",
+      );
+    });
+  });
+
+  describe("UserService.getById()", () => {
+    it("should find an existing user with a existing id", async () => {
+      prismaMock.user.findUnique.mockResolvedValue({ id: 1 });
+
+      const user = await userService.getById(1);
+
+      expect(prismaMock.user.findUnique).toHaveBeenCalled();
+      expect(user).toEqual({ id: 1 });
+    });
+
+    it("should throw an error if an user is not found", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(null);
+
+      expect(userService.getById(900)).rejects.toThrow("User not found");
+    });
+  });
 });
