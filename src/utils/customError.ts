@@ -27,3 +27,14 @@ export class CustomValidationError extends Error {
     Object.setPrototypeOf(this, CustomValidationError.prototype);
   }
 }
+
+export class CustomServerError extends Error {
+  public statusCode: number;
+
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+
+    Object.setPrototypeOf(this, CustomServerError.prototype);
+  }
+}
