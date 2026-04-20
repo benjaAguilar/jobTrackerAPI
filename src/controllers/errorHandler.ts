@@ -1,5 +1,9 @@
 import { Error, Request, Response, Next } from "../types/express";
-import { CustomError, CustomValidationError } from "../utils/customError";
+import {
+  CustomError,
+  CustomServerError,
+  CustomValidationError,
+} from "../utils/customError";
 
 export function errorHandler(
   err: Error,
@@ -25,6 +29,15 @@ export function errorHandler(
     return res.status(err.statusCode).json({
       success: false,
       message: err.message,
+    });
+  }
+
+  if (err instanceof CustomServerError) {
+    console.log(err.message);
+
+    return res.status(err.statusCode).json({
+      success: false,
+      message: "Internal server Error",
     });
   }
 
