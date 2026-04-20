@@ -20,11 +20,11 @@ export class PrismaUser implements UserRepository {
     ]);
 
     if (userByUsername) {
-      throw new Error("Username is already taken");
+      throw new CustomError("Username is already taken", 400);
     }
 
     if (userByEmail) {
-      throw new Error("Email is already taken");
+      throw new CustomError("Email is already taken", 400);
     }
 
     return this.prisma.user.create({ data });
