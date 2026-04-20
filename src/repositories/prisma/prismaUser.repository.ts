@@ -1,4 +1,5 @@
 import { PrismaClient, User } from "../../../generated/prisma/client";
+import { CustomError } from "../../utils/customError";
 import { UserRepository } from "../user.repository";
 
 export class PrismaUser implements UserRepository {
@@ -27,5 +28,20 @@ export class PrismaUser implements UserRepository {
     }
 
     return this.prisma.user.create({ data });
+  }
+
+  async get(usernameOrEmail: string): Promise<User> {
+    const userArr = await Promise.all([
+      this.prisma.user.findUnique({ where: { username: usernameOrEmail } }),
+      this.prisma.user.findUnique({ where: { email: usernameOrEmail } }),
+    ]);
+
+    const [user] = userArr.filter((user) => user !== null);
+
+    if (!user) {
+      throw new CustomError("User not found", 404);
+    }
+
+    return user;
   }
 }
