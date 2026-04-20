@@ -8,4 +8,6 @@ export interface UserRepository {
   }): Promise<User>;
 
   get(usernameOrEmail: string): Promise<User>;
+
+  getById(id: number): Promise<User>;
 }
