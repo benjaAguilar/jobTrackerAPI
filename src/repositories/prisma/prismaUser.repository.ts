@@ -44,4 +44,14 @@ export class PrismaUser implements UserRepository {
 
     return user;
   }
+
+  async getById(id: number): Promise<User> {
+    const user = await this.prisma.user.findUnique({ where: { id: id } });
+
+    if (!user) {
+      throw new CustomError("User not found", 404);
+    }
+
+    return user;
+  }
 }
