@@ -6,4 +6,6 @@ export interface UserRepository {
     password: string;
     email: string;
   }): Promise<User>;
+
+  get(usernameOrEmail: string): Promise<User>;
 }
