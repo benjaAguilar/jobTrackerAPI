@@ -15,4 +15,8 @@ export class UserService implements UserRepository {
   }): Promise<User> {
     return this.userRepo.create(data);
   }
+
+  async get(usernameOrEmail: string): Promise<User> {
+    return this.userRepo.get(usernameOrEmail);
+  }
 }
