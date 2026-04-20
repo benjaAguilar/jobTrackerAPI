@@ -19,4 +19,8 @@ export class UserService implements UserRepository {
   async get(usernameOrEmail: string): Promise<User> {
     return this.userRepo.get(usernameOrEmail);
   }
+
+  async getById(id: number): Promise<User> {
+    return this.userRepo.getById(id);
+  }
 }
