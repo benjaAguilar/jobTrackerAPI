@@ -1,10 +1,35 @@
 import { getValidationRes } from "../middlewares/validationResult";
 import { Services } from "../services";
 import { Request, Response } from "../types/express";
-import { comparePasswords } from "../utils/bcrypt";
+import { comparePasswords, hashPassword } from "../utils/bcrypt";
 import createJWT from "../utils/createJWT";
 import { tryCatch } from "../utils/errorCatch";
-import { validateLogin } from "../utils/validator";
+import { validateLogin, validateRegister } from "../utils/validator";
+
+export const register = [
+  ...validateRegister,
+  tryCatch(async (req: Request, res: Response) => {
+    getValidationRes(req);
+
+    const { username, email, password } = req.body;
+
+    // hash password
+    const hashedPassword = await hashPassword(password);
+
+    // create user on db
+    const { userService } = req.app.locals.services as Services;
+    await userService.create({
+      username: username,
+      password: hashedPassword,
+      email: email,
+    });
+
+    res.json({
+      success: true,
+      message: `User ${username} registered`,
+    });
+  }),
+];
 
 export const login = [
   ...validateLogin,
