@@ -48,3 +48,22 @@ export const validateLogin = [
     .withMessage("Username or Email is required"),
   body("password").trim().notEmpty().withMessage("Password is required"),
 ];
+
+export const validateCreateJob = [
+  body("vacantName").trim().notEmpty().withMessage("Vacant Name is required"),
+  body("company").trim().notEmpty().withMessage("Company Name is required"),
+  body("notes").trim(),
+  body("state")
+    .trim()
+    .notEmpty()
+    .withMessage("Job state is required")
+    .custom((val: string) => {
+      const enums = ["offer", "applied", "interview", "rejected"];
+      const [isValidEnum] = enums.filter((enu) => val === enu);
+
+      if (!isValidEnum) return false;
+
+      return true;
+    })
+    .withMessage("Please provide a valid job state"),
+];
