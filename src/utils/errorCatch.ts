@@ -1,8 +1,14 @@
-import { Request, Response, Next, RequestHandler } from "../types/express";
+import { Request, Response, Next } from "../types/express";
+
+type AsyncHandler<TReq extends Request> = (
+  req: TReq,
+  res: Response,
+  next: Next,
+) => Promise<any>;
 
 export const tryCatch =
-  (controller: RequestHandler) =>
-  async (req: Request, res: Response, next: Next) => {
+  <TReq extends Request>(controller: AsyncHandler<TReq>) =>
+  async (req: TReq, res: Response, next: Next) => {
     try {
       await controller(req, res, next);
     } catch (error) {
