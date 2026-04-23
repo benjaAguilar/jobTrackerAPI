@@ -10,6 +10,9 @@ jest.mock("../../src/middlewares/passport.ts", () => ({
 app.locals.services = {
   jobService: {
     create: jest.fn(),
+    getJobs: jest.fn((id, state) => {
+      return [{ id: 1 }];
+    }),
   },
   techService: {
     createOrGet: jest.fn(() => ({
@@ -32,6 +35,7 @@ describe("POST /api/job/create", () => {
       expect(res.body.message).toBe("Unauthorized");
     });
   });
+
   describe("success cases", () => {
     it("should give 200 with message job created being auth", async () => {
       (jwtAuthStrategy as jest.Mock).mockImplementation(
@@ -110,6 +114,45 @@ describe("POST /api/job/create", () => {
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe("validation error");
       expect(res.body.fields[0].msg).toBe("Please provide a valid job state");
+    });
+  });
+});
+
+describe("GET /api/job?jobState=<param>", () => {
+  describe("auth fail", () => {
+    it("throws a 401 if user is not authenticated", async () => {
+      (jwtAuthStrategy as jest.Mock).mockImplementationOnce(
+        (_req: Request, res: Response) => {
+          return res.status(401).json({ message: "Unauthorized" });
+        },
+      );
+
+      const res = await request(app).post("/api/job/create");
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("Unauthorized");
+    });
+  });
+
+  describe("success", () => {
+    it("should give 200 and send the jobs", async () => {
+      const res = await request(app).get("/api/job");
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("retrieved jobs successfully");
+      expect(res.body.jobs).toEqual([{ id: 1 }]);
+    });
+
+    it("should accept params", async () => {
+      app.request.user = { id: 1 };
+      const res = await request(app).get("/api/job?jobState=offer");
+
+      expect(res.status).toBe(200);
+      expect(app.locals.services.jobService.getJobs).toHaveBeenCalledWith(
+        1,
+        "offer",
+      );
+      expect(res.body.message).toBe("retrieved jobs successfully");
+      expect(res.body.jobs).toEqual([{ id: 1 }]);
     });
   });
 });
