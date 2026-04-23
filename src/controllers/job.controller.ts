@@ -17,13 +17,7 @@ export const create = [
 
     const { jobService, techService } = req.app.locals.services as Services;
 
-    const techsIds: number[] = await Promise.all(
-      JSON.parse(techs).map(async (tech: string) => {
-        const tec = await techService.createOrGet(tech);
-        return tec.id;
-      }),
-    );
-
+    const techsIds = await techService.createMultipleTechs(techs);
     await jobService.create({
       vacantName: vacantName,
       company: company,
