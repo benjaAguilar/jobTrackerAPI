@@ -1,3 +1,4 @@
+import { JobState } from "../../generated/prisma/enums";
 import { getValidationRes } from "../middlewares/validationResult";
 import { Services } from "../services";
 import { AuthenticatedRequest, Request, Response } from "../types/express";
@@ -39,3 +40,21 @@ export const create = [
     });
   }),
 ];
+
+export const getJobs = tryCatch(async (req: Request, res: Response) => {
+  // we use AS cause we make sure that exist,
+  //TODO: check if there is a better solution
+
+  const { user } = req as AuthenticatedRequest;
+
+  const { jobState } = req.query;
+  const { jobService } = req.app.locals.services as Services;
+
+  const jobs = await jobService.getJobs(user.id, jobState as JobState);
+
+  res.json({
+    success: true,
+    message: `retrieved jobs successfully`,
+    jobs: jobs,
+  });
+});
