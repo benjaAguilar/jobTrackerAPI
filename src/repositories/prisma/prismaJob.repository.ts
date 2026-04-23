@@ -31,4 +31,10 @@ export class PrismaJob implements JobRepository {
       },
     });
   }
+
+  async getJobs(userId: number, state: JobState | undefined): Promise<Job[]> {
+    return this.prisma.job.findMany({
+      where: { state: state, user_id: userId },
+    });
+  }
 }
