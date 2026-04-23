@@ -13,4 +13,19 @@ export interface JobRepository {
   }): Promise<Job>;
 
   getJobs(userId: number, state: JobState | undefined): Promise<Job[]>;
+
+  getJobById(jobId: number): Promise<Job | null>;
+
+  updateJob(
+    jobId: number,
+    userId: number,
+    data: {
+      vacantName: string;
+      company: string;
+      notes?: string;
+      techs: number[];
+      state: JobState;
+      rejectionReason?: string;
+    },
+  ): Promise<Job>;
 }

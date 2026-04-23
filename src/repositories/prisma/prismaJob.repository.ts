@@ -8,7 +8,7 @@ export class PrismaJob implements JobRepository {
     this.prisma = prisma;
   }
 
-  async create(data: {
+  create(data: {
     vacantName: string;
     company: string;
     notes?: string;
@@ -32,9 +32,42 @@ export class PrismaJob implements JobRepository {
     });
   }
 
-  async getJobs(userId: number, state: JobState | undefined): Promise<Job[]> {
+  getJobById(jobId: number): Promise<Job | null> {
+    return this.prisma.job.findUnique({
+      where: { id: jobId },
+    });
+  }
+
+  getJobs(userId: number, state: JobState | undefined): Promise<Job[]> {
     return this.prisma.job.findMany({
       where: { state: state, user_id: userId },
+    });
+  }
+
+  updateJob(
+    jobId: number,
+    userId: number,
+    data: {
+      vacantName: string;
+      company: string;
+      notes?: string;
+      techs: number[];
+      state: JobState;
+      rejectionReason?: string;
+    },
+  ): Promise<Job> {
+    return this.prisma.job.update({
+      where: { id: jobId, user_id: userId },
+      data: {
+        vacantName: data.vacantName,
+        company: data.company,
+        notes: data.notes,
+        state: data.state,
+        rejectionReason: data.rejectionReason,
+        techsRequired: {
+          create: data.techs.map((techId) => ({ tech_id: techId })),
+        },
+      },
     });
   }
 }
