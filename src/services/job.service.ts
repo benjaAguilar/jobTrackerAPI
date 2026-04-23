@@ -20,4 +20,11 @@ export class JobService implements JobRepository {
   }): Promise<Job> {
     return this.jobRepo.create(data);
   }
+
+  async getJobs(userId: number, state: JobState | undefined): Promise<Job[]> {
+    const enums: JobState[] = ["offer", "applied", "interview", "rejected"];
+    const [isValidEnum] = enums.filter((enu) => state === enu);
+
+    return this.jobRepo.getJobs(userId, isValidEnum);
+  }
 }
