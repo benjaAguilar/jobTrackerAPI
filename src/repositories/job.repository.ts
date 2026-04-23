@@ -11,4 +11,6 @@ export interface JobRepository {
     userId: number;
     rejectionReason?: string;
   }): Promise<Job>;
+
+  getJobs(userId: number, state: JobState | undefined): Promise<Job[]>;
 }
