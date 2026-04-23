@@ -9,7 +9,7 @@ export class TechService implements TechRepository {
     this.techRepo = techRepo;
   }
 
-  async createMultipleTechs(techs: string): Promise<number[]> {
+  async createOrGetMultipleTechs(techs: string): Promise<number[]> {
     return await Promise.all(
       JSON.parse(techs).map(async (tech: string) => {
         const normalizedTech = normalizeTechs(tech);
