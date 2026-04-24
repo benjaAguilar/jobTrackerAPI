@@ -23,9 +23,9 @@ export interface JobRepository {
       vacantName: string;
       company: string;
       notes?: string;
+      rejectionReason?: string;
       techs: number[];
       state: JobState;
-      rejectionReason?: string;
     },
   ): Promise<Job>;
 }

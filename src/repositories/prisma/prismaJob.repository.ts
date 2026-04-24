@@ -51,9 +51,9 @@ export class PrismaJob implements JobRepository {
       vacantName: string;
       company: string;
       notes?: string;
+      rejectionReason?: string;
       techs: number[];
       state: JobState;
-      rejectionReason?: string;
     },
   ): Promise<Job> {
     return this.prisma.job.update({
@@ -62,8 +62,8 @@ export class PrismaJob implements JobRepository {
         vacantName: data.vacantName,
         company: data.company,
         notes: data.notes,
-        state: data.state,
         rejectionReason: data.rejectionReason,
+        state: data.state,
         techsRequired: {
           create: data.techs.map((techId) => ({ tech_id: techId })),
         },
