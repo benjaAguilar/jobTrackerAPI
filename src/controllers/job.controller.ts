@@ -3,6 +3,7 @@ import { getValidationRes } from "../middlewares/validationResult";
 import { Services } from "../services";
 import { AuthenticatedRequest, Request, Response } from "../types/express";
 import { tryCatch } from "../utils/errorCatch";
+import { parseParamId } from "../utils/utils";
 import { validateCreateJob } from "../utils/validator";
 
 export const create = [
@@ -17,7 +18,7 @@ export const create = [
 
     const { jobService, techService } = req.app.locals.services as Services;
 
-    const techsIds = await techService.createMultipleTechs(techs);
+    const techsIds = await techService.createOrGetMultipleTechs(techs);
     await jobService.create({
       vacantName: vacantName,
       company: company,
@@ -52,3 +53,32 @@ export const getJobs = tryCatch(async (req: Request, res: Response) => {
     jobs: jobs,
   });
 });
+
+export const update = [
+  ...validateCreateJob,
+  tryCatch(async (req: Request, res: Response) => {
+    getValidationRes(req);
+
+    const jobId = parseParamId(req.params.jobId);
+    const { user } = req as AuthenticatedRequest;
+
+    const { vacantName, company, notes, state } = req.body;
+    const techs = req.body.techs ? req.body.techs : '["other"]';
+
+    const { jobService, techService } = req.app.locals.services as Services;
+
+    const techsIds = await techService.createOrGetMultipleTechs(techs);
+    await jobService.updateJob(jobId, user.id, {
+      vacantName: vacantName,
+      company: company,
+      notes: notes,
+      state: state,
+      techs: techsIds,
+    });
+
+    res.json({
+      success: true,
+      message: "Job updated successfully",
+    });
+  }),
+];
