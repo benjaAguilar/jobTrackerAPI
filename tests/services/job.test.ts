@@ -87,4 +87,22 @@ describe("JobService", () => {
       expect(dbService.getJobs).toHaveBeenCalledWith(1, undefined);
     });
   });
+
+  describe("JobService.getJobById", () => {
+    it("should return a job", async () => {
+      prismaMock.job.findUnique.mockResolvedValue({ id: 20 });
+
+      const job = await jobService.getJobById(20);
+
+      expect(job).toEqual({ id: 20 });
+    });
+
+    it("recieves the correct params", async () => {
+      dbService.getJobById = jest.fn();
+
+      await jobService.getJobById(20);
+
+      expect(dbService.getJobById).toHaveBeenCalledWith(20);
+    });
+  });
 });
