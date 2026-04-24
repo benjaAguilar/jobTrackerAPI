@@ -1,30 +1,31 @@
-import { JobState } from "../../generated/prisma/enums";
-import { PrismaJob } from "../../src/repositories/prisma/prismaJob.repository";
+import { Job } from "../../generated/prisma/client";
+import { JobRepository } from "../../src/repositories/job.repository";
 import { JobService } from "../../src/services/job.service";
 
+const createMockJob = (overrides?: Partial<Job>): Job => ({
+  id: 1,
+  vacantName: "test",
+  company: "test",
+  notes: null,
+  state: "offer",
+  rejectionReason: null,
+  user_id: 1,
+  ...overrides,
+});
+const repoMock: jest.Mocked<JobRepository> = {
+  getJobById: jest.fn(),
+  create: jest.fn(),
+  getJobs: jest.fn(),
+  updateJob: jest.fn(),
+};
+const jobService = new JobService(repoMock);
+
 describe("JobService", () => {
-  const prismaMock = {
-    job: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      findMany: jest.fn(),
-      update: jest.fn(),
-    },
-  };
-
-  const dbService = new PrismaJob(prismaMock as any);
-  const jobService = new JobService(dbService);
-
-  //TODO: we should decople jobService with PrismaJob
-  //what happens if one deay we change prisma for another ORM?
-  //all services that are copled with prisma gonna fail
-  //HACK: JUST TEST THE LOGIC OF JobService
-
   describe("JobService.create()", () => {
     it("should create an user", async () => {
-      // a mi no me interesa o no se lo que hay despues de jobService
-      // yo solo se que si llamo jobService.create() me devuelve un usuario
-      prismaMock.job.create.mockResolvedValue({ id: 1 });
+      repoMock.create.mockImplementationOnce(async () =>
+        createMockJob({ id: 5 }),
+      );
 
       const job = await jobService.create({
         vacantName: "web dev",
@@ -34,12 +35,10 @@ describe("JobService", () => {
         userId: 3,
       });
 
-      expect(job).toEqual({ id: 1 });
+      expect(job).toEqual(createMockJob({ id: 5 }));
     });
 
     it("should receive the correct params", async () => {
-      dbService.create = jest.fn();
-
       await jobService.create({
         vacantName: "web dev",
         company: "adult swim",
@@ -48,7 +47,7 @@ describe("JobService", () => {
         userId: 3,
       });
 
-      expect(dbService.create).toHaveBeenCalledWith({
+      expect(repoMock.create).toHaveBeenCalledWith({
         vacantName: "web dev",
         company: "adult swim",
         state: "applied",
@@ -60,49 +59,50 @@ describe("JobService", () => {
 
   describe("JobService.getJobs()", () => {
     it("should return an array of jobs", async () => {
-      prismaMock.job.findMany.mockResolvedValue([{ id: 3 }, { id: 6 }]);
+      repoMock.getJobs.mockImplementationOnce(async () => [
+        createMockJob(),
+        createMockJob({ id: 3 }),
+      ]);
 
       const jobs = await jobService.getJobs(1, "applied");
 
-      expect(jobs).toEqual([{ id: 3 }, { id: 6 }]);
+      expect(jobs).toEqual([createMockJob(), createMockJob({ id: 3 })]);
     });
 
     it("is filtering by job state", async () => {
-      dbService.getJobs = jest.fn();
-
       await jobService.getJobs(1, "rejected");
 
-      expect(dbService.getJobs).toHaveBeenCalledWith(1, "rejected");
+      expect(repoMock.getJobs).toHaveBeenCalledWith(1, "rejected");
     });
 
     it("if state is invalid should pass undefined as parameter", async () => {
       await jobService.getJobs(1, "noValid");
 
-      expect(dbService.getJobs).toHaveBeenCalledWith(1, undefined);
+      expect(repoMock.getJobs).toHaveBeenCalledWith(1, undefined);
     });
 
     it("if state is undefined should pass undefined as parameter", async () => {
       await jobService.getJobs(1, undefined);
 
-      expect(dbService.getJobs).toHaveBeenCalledWith(1, undefined);
+      expect(repoMock.getJobs).toHaveBeenCalledWith(1, undefined);
     });
   });
 
-  describe("JobService.getJobById", () => {
+  describe("JobService.getJobById()", () => {
     it("should return a job", async () => {
-      prismaMock.job.findUnique.mockResolvedValue({ id: 20 });
+      repoMock.getJobById.mockImplementationOnce(async () =>
+        createMockJob({ id: 20 }),
+      );
 
       const job = await jobService.getJobById(20);
 
-      expect(job).toEqual({ id: 20 });
+      expect(job).toEqual(createMockJob({ id: 20 }));
     });
 
     it("recieves the correct params", async () => {
-      dbService.getJobById = jest.fn();
-
       await jobService.getJobById(20);
 
-      expect(dbService.getJobById).toHaveBeenCalledWith(20);
+      expect(repoMock.getJobById).toHaveBeenCalledWith(20);
     });
   });
 });
