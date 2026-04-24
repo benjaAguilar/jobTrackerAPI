@@ -1,6 +1,9 @@
 import { PrismaUser } from "../../src/repositories/prisma/prismaUser.repository";
 import { UserService } from "../../src/services/user.service";
 
+//TODO: REFACTOR this to decople prisma
+//TODO: add more test cases
+
 describe("UserService", () => {
   const prismaMock = {
     user: {
