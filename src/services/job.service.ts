@@ -22,7 +22,10 @@ export class JobService implements JobRepository {
     return this.jobRepo.create(data);
   }
 
-  async getJobs(userId: number, state: JobState | undefined): Promise<Job[]> {
+  async getJobs(
+    userId: number,
+    state: JobState | undefined | string,
+  ): Promise<Job[]> {
     const enums: JobState[] = ["offer", "applied", "interview", "rejected"];
     const [isValidEnum] = enums.filter((enu) => state === enu);
 
@@ -40,15 +43,21 @@ export class JobService implements JobRepository {
       vacantName: string;
       company: string;
       notes?: string;
+      rejectionReason?: string;
       techs: number[];
       state: JobState;
-      rejectionReason?: string;
     },
   ): Promise<Job> {
     const job = await this.jobRepo.getJobById(jobId);
-    if (job?.user_id !== userId) {
+
+    if (!job) throw new CustomError("Job not found", 404);
+    if (job.user_id !== userId) {
       throw new CustomError("Unauthorized to edit this job", 401);
     }
+
+    // instead of throw an error we can just set rejectionReason to undefined;
+    if (data.state !== "rejected" && data.rejectionReason)
+      data.rejectionReason = undefined;
 
     return this.jobRepo.updateJob(jobId, userId, data);
   }
