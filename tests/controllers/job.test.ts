@@ -10,9 +10,10 @@ jest.mock("../../src/middlewares/passport.ts", () => ({
 app.locals.services = {
   jobService: {
     create: jest.fn(),
-    getJobs: jest.fn((id, state) => {
+    getJobs: jest.fn((_id, _state) => {
       return [{ id: 1 }];
     }),
+    updateJob: jest.fn(),
   },
   techService: {
     createOrGet: jest.fn(() => ({
@@ -154,6 +155,66 @@ describe("GET /api/job?jobState=<param>", () => {
       );
       expect(res.body.message).toBe("retrieved jobs successfully");
       expect(res.body.jobs).toEqual([{ id: 1 }]);
+    });
+  });
+});
+
+describe("PUT /api/job/:jobId", () => {
+  describe("auth fail", () => {
+    it("throws a 401 if user is not authenticated", async () => {
+      (jwtAuthStrategy as jest.Mock).mockImplementationOnce(
+        (_req: Request, res: Response) => {
+          return res.status(401).json({ message: "Unauthorized" });
+        },
+      );
+
+      const res = await request(app).put("/api/job/3");
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("Unauthorized");
+    });
+  });
+
+  describe("success", () => {
+    it("should give 200 if everything is correct", async () => {
+      const res = await request(app).put("/api/job/3").send({
+        vacantName: "web Dev",
+        company: "Evil",
+        state: "offer",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("Job updated successfully");
+    });
+  });
+
+  describe("validation errors", () => {
+    it("should throw 400 if param is invalid", async () => {
+      const res = await request(app).put("/api/job/invalid").send({
+        vacantName: "web Dev",
+        company: "Evil",
+        state: "offer",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe("Provide a valid parameter id");
+    });
+
+    it("body can`t be empty", async () => {
+      const res = await request(app).put("/api/job/1");
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe("validation error");
+    });
+
+    it("gives 400 if state is invalid", async () => {
+      const res = await request(app).put("/api/job/invalid").send({
+        vacantName: "web Dev",
+        company: "Evil",
+        state: "invalid",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe("validation error");
+      expect(res.body.fields[0].msg).toBe("Please provide a valid job state");
     });
   });
 });
