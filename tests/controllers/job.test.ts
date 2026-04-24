@@ -18,7 +18,7 @@ app.locals.services = {
     createOrGet: jest.fn(() => ({
       id: Math.floor(Math.random() * (50 - 1) + 1),
     })),
-    createMultipleTechs: jest.fn(() => [1, 2, 5]),
+    createOrGetMultipleTechs: jest.fn(() => [1, 2, 5]),
   },
 };
 
