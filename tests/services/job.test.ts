@@ -13,10 +13,13 @@ const createMockJob = (overrides?: Partial<Job>): Job => ({
   ...overrides,
 });
 const repoMock: jest.Mocked<JobRepository> = {
-  getJobById: jest.fn(),
+  getJobById: jest.fn(async (id) => createMockJob({ id: id, user_id: 9 })),
   create: jest.fn(),
   getJobs: jest.fn(),
-  updateJob: jest.fn(),
+  updateJob: jest.fn(async (_jobId, _userId, data) => {
+    const { techs, ...mockData } = data;
+    return createMockJob(mockData);
+  }),
 };
 const jobService = new JobService(repoMock);
 
@@ -103,6 +106,110 @@ describe("JobService", () => {
       await jobService.getJobById(20);
 
       expect(repoMock.getJobById).toHaveBeenCalledWith(20);
+    });
+  });
+
+  describe("JobService.updateJob()", () => {
+    it("should return an updated a job", async () => {
+      const updatedJob = await jobService.updateJob(3, 9, {
+        vacantName: "devops",
+        company: "pea",
+        state: "applied",
+        techs: [1, 5, 13],
+      });
+
+      expect(updatedJob).toEqual(
+        createMockJob({
+          vacantName: "devops",
+          company: "pea",
+          state: "applied",
+        }),
+      );
+    });
+
+    it("should be capable to edit the optional notes", async () => {
+      const updatedJob = await jobService.updateJob(3, 9, {
+        vacantName: "devops",
+        company: "pea",
+        state: "applied",
+        techs: [1, 5, 13],
+        notes: "im rick note",
+      });
+
+      expect(updatedJob).toEqual(
+        createMockJob({
+          vacantName: "devops",
+          company: "pea",
+          state: "applied",
+          notes: "im rick note",
+        }),
+      );
+    });
+
+    it("should be capable to update rejectionReason when state is rejected", async () => {
+      const updatedJob = await jobService.updateJob(3, 9, {
+        vacantName: "devops",
+        company: "pea",
+        state: "rejected",
+        techs: [1, 5, 13],
+        rejectionReason: "im too fat",
+        notes: "im rick note",
+      });
+
+      expect(updatedJob).toEqual(
+        createMockJob({
+          vacantName: "devops",
+          company: "pea",
+          state: "rejected",
+          rejectionReason: "im too fat",
+          notes: "im rick note",
+        }),
+      );
+    });
+
+    it("should default rejectionReason to undefined if has a value and state != rejected", async () => {
+      const job = await jobService.updateJob(3, 9, {
+        vacantName: "devops",
+        company: "pea",
+        state: "applied",
+        techs: [1, 5, 13],
+        rejectionReason: "im too fat",
+        notes: "im rick note",
+      });
+
+      expect(job).toEqual(
+        createMockJob({
+          vacantName: "devops",
+          company: "pea",
+          state: "applied",
+          rejectionReason: undefined,
+          notes: "im rick note",
+        }),
+      );
+    });
+
+    it("should throw an error if job.user_id does not match with the given userId", async () => {
+      expect(
+        jobService.updateJob(3, 5, {
+          vacantName: "devops",
+          company: "pea",
+          state: "applied",
+          techs: [1, 5, 13],
+        }),
+      ).rejects.toThrow("Unauthorized to edit this job");
+    });
+
+    it("should throw an error if jobId given does not belong to a job", async () => {
+      repoMock.getJobById.mockImplementationOnce(async () => null);
+
+      expect(
+        jobService.updateJob(900, 5, {
+          vacantName: "devops",
+          company: "pea",
+          state: "applied",
+          techs: [1, 5, 13],
+        }),
+      ).rejects.toThrow("Job not found");
     });
   });
 });
