@@ -28,4 +28,6 @@ export interface JobRepository {
       state: JobState;
     },
   ): Promise<Job>;
+
+  deleteJob(jobId: number, userId: number): Promise<Job>;
 }

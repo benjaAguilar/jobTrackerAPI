@@ -61,4 +61,15 @@ export class JobService implements JobRepository {
 
     return this.jobRepo.updateJob(jobId, userId, data);
   }
+
+  async deleteJob(jobId: number, userId: number): Promise<Job> {
+    const job = await this.jobRepo.getJobById(jobId);
+    console.log(job);
+
+    if (!job) throw new CustomError("Job not found", 404);
+    if (job.user_id !== userId) {
+      throw new CustomError("Unauthorized to delete this job", 401);
+    }
+    return this.jobRepo.deleteJob(jobId, userId);
+  }
 }

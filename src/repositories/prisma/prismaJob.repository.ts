@@ -70,4 +70,8 @@ export class PrismaJob implements JobRepository {
       },
     });
   }
+
+  deleteJob(jobId: number, userId: number): Promise<Job> {
+    return this.prisma.job.delete({ where: { id: jobId, user_id: userId } });
+  }
 }
