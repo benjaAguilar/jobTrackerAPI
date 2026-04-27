@@ -14,6 +14,7 @@ app.locals.services = {
       return [{ id: 1 }];
     }),
     updateJob: jest.fn(),
+    deleteJob: jest.fn(),
   },
   techService: {
     createOrGet: jest.fn(() => ({
@@ -215,6 +216,40 @@ describe("PUT /api/job/:jobId", () => {
       expect(res.status).toBe(400);
       expect(res.body.message).toBe("validation error");
       expect(res.body.fields[0].msg).toBe("Please provide a valid job state");
+    });
+  });
+
+  describe("DELETE /api/job/:jobId", () => {
+    describe("auth fail", () => {
+      it("throws a 401 if user is not authenticated", async () => {
+        (jwtAuthStrategy as jest.Mock).mockImplementationOnce(
+          (_req: Request, res: Response) => {
+            return res.status(401).json({ message: "Unauthorized" });
+          },
+        );
+
+        const res = await request(app).delete("/api/job/3");
+        expect(res.status).toBe(401);
+        expect(res.body.message).toBe("Unauthorized");
+      });
+    });
+
+    describe("success", () => {
+      it("should give 200", async () => {
+        const res = await request(app).delete("/api/job/3");
+
+        expect(res.status).toBe(200);
+        expect(res.body.message).toBe("Job deleted successfully");
+      });
+    });
+
+    describe("validation errors", () => {
+      it("should throw 400 if param is invalid", async () => {
+        const res = await request(app).delete("/api/job/invalid");
+
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("Provide a valid parameter id");
+      });
     });
   });
 });
