@@ -34,7 +34,7 @@ model Job {
 }
 
 model Job_tech {
-  job     Job  @relation(fields: [job_id], references: [id])
+  job     Job  @relation(fields: [job_id], references: [id], onDelete: Cascade)
   job_id  Int
   tech    Tech @relation(fields: [tech_id], references: [id])
   tech_id Int
