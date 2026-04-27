@@ -82,3 +82,16 @@ export const update = [
     });
   }),
 ];
+
+export const deleteJob = tryCatch(async (req: Request, res: Response) => {
+  const jobId = parseParamId(req.params.jobId);
+  const { user } = req as AuthenticatedRequest;
+  const { jobService } = req.app.locals.services as Services;
+
+  await jobService.deleteJob(jobId, user.id);
+
+  res.json({
+    success: true,
+    message: "Job deleted successfully",
+  });
+});
