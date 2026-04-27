@@ -20,6 +20,7 @@ const repoMock: jest.Mocked<JobRepository> = {
     const { techs, ...mockData } = data;
     return createMockJob(mockData);
   }),
+  deleteJob: jest.fn(async (id, _userId) => createMockJob({ id: id })),
 };
 const jobService = new JobService(repoMock);
 
@@ -210,6 +211,29 @@ describe("JobService", () => {
           techs: [1, 5, 13],
         }),
       ).rejects.toThrow("Job not found");
+    });
+  });
+
+  describe("JobService.deleteJob()", () => {
+    it("Should return the deleted Job", async () => {
+      const res = await jobService.deleteJob(5, 9);
+      expect(res).toEqual(createMockJob({ id: 5 }));
+    });
+
+    it("Should recieve correct param id", async () => {
+      await jobService.deleteJob(15, 9);
+      expect(repoMock.deleteJob).toHaveBeenCalledWith(15, 9);
+    });
+
+    it("should throw an error if jobId given does not exist", async () => {
+      repoMock.getJobById.mockImplementationOnce(async () => null);
+      expect(jobService.deleteJob(3, 9)).rejects.toThrow("Job not found");
+    });
+
+    it("should throw an error if job.user_id does not match with the given userId", async () => {
+      expect(jobService.deleteJob(3, 5)).rejects.toThrow(
+        "Unauthorized to delete this job",
+      );
     });
   });
 });
