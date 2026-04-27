@@ -1,5 +1,6 @@
 import { Job } from "../../generated/prisma/client";
 import { JobState } from "../../generated/prisma/enums";
+import { JobWithTechs } from "../types/prisma";
 
 export interface JobRepository {
   create(data: {
@@ -14,7 +15,7 @@ export interface JobRepository {
 
   getJobs(userId: number, state: JobState | undefined): Promise<Job[]>;
 
-  getJobById(jobId: number): Promise<Job | null>;
+  getJobById(jobId: number): Promise<JobWithTechs | null>;
 
   updateJob(
     jobId: number,

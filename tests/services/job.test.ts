@@ -1,8 +1,8 @@
-import { Job } from "../../generated/prisma/client";
 import { JobRepository } from "../../src/repositories/job.repository";
 import { JobService } from "../../src/services/job.service";
+import { JobWithTechs } from "../../src/types/prisma";
 
-const createMockJob = (overrides?: Partial<Job>): Job => ({
+const createMockJob = (overrides?: Partial<JobWithTechs>): JobWithTechs => ({
   id: 1,
   vacantName: "test",
   company: "test",
@@ -10,6 +10,7 @@ const createMockJob = (overrides?: Partial<Job>): Job => ({
   state: "offer",
   rejectionReason: null,
   user_id: 1,
+  techsRequired: [],
   ...overrides,
 });
 const repoMock: jest.Mocked<JobRepository> = {

@@ -1,4 +1,5 @@
 import { Job, JobState, PrismaClient } from "../../../generated/prisma/client";
+import { JobWithTechs } from "../../types/prisma";
 import { JobRepository } from "../job.repository";
 
 export class PrismaJob implements JobRepository {
@@ -32,15 +33,29 @@ export class PrismaJob implements JobRepository {
     });
   }
 
-  getJobById(jobId: number): Promise<Job | null> {
+  getJobById(jobId: number): Promise<JobWithTechs | null> {
     return this.prisma.job.findUnique({
       where: { id: jobId },
+      include: {
+        techsRequired: {
+          include: {
+            tech: true,
+          },
+        },
+      },
     });
   }
 
   getJobs(userId: number, state: JobState | undefined): Promise<Job[]> {
     return this.prisma.job.findMany({
       where: { state: state, user_id: userId },
+      include: {
+        techsRequired: {
+          include: {
+            tech: true,
+          },
+        },
+      },
     });
   }
 
@@ -65,6 +80,7 @@ export class PrismaJob implements JobRepository {
         rejectionReason: data.rejectionReason,
         state: data.state,
         techsRequired: {
+          deleteMany: {},
           create: data.techs.map((techId) => ({ tech_id: techId })),
         },
       },

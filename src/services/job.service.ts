@@ -1,6 +1,7 @@
 import { Job } from "../../generated/prisma/client";
 import { JobState } from "../../generated/prisma/enums";
 import { JobRepository } from "../repositories/job.repository";
+import { JobWithTechs } from "../types/prisma";
 import { CustomError } from "../utils/customError";
 
 export class JobService implements JobRepository {
@@ -32,7 +33,7 @@ export class JobService implements JobRepository {
     return this.jobRepo.getJobs(userId, isValidEnum);
   }
 
-  async getJobById(jobId: number): Promise<Job | null> {
+  async getJobById(jobId: number): Promise<JobWithTechs | null> {
     return this.jobRepo.getJobById(jobId);
   }
 
