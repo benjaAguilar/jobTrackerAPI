@@ -1,6 +1,6 @@
 import { getValidationRes } from "../middlewares/validationResult";
 import { Services } from "../services";
-import { Request, Response } from "../types/express";
+import { AuthenticatedRequest, Request, Response } from "../types/express";
 import { comparePasswords, hashPassword } from "../utils/bcrypt";
 import createJWT from "../utils/createJWT";
 import { tryCatch } from "../utils/errorCatch";
@@ -58,3 +58,16 @@ export const login = [
     });
   }),
 ];
+
+export const logout = tryCatch(async (_req: Request, res: Response) => {
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+  });
+
+  res.json({
+    success: true,
+    message: "Logged out",
+  });
+});
