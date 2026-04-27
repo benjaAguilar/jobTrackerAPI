@@ -1,6 +1,6 @@
 import { getValidationRes } from "../middlewares/validationResult";
 import { Services } from "../services";
-import { AuthenticatedRequest, Request, Response } from "../types/express";
+import { Request, Response } from "../types/express";
 import { comparePasswords, hashPassword } from "../utils/bcrypt";
 import createJWT from "../utils/createJWT";
 import { tryCatch } from "../utils/errorCatch";
@@ -13,10 +13,8 @@ export const register = [
 
     const { username, email, password } = req.body;
 
-    // hash password
     const hashedPassword = await hashPassword(password);
 
-    // create user on db
     const { userService } = req.app.locals.services as Services;
     await userService.create({
       username: username,
