@@ -4,7 +4,7 @@ import {
   JobState,
   PrismaClient,
 } from "../../../generated/prisma/client";
-import { JobWithTechsAndHistory } from "../../types/prisma";
+import { JobWithHistory, JobWithTechsAndHistory } from "../../types/prisma";
 import { JobRepository } from "../job.repository";
 
 export class PrismaJob implements JobRepository {
@@ -110,6 +110,53 @@ export class PrismaJob implements JobRepository {
       data: {
         job_id: jobId,
         state: state,
+      },
+    });
+  }
+
+  getEvents(
+    userId: number,
+    state: JobState,
+    containState: JobState,
+    initDate: Date,
+    endDate: Date,
+    noneState?: JobState,
+  ): Promise<JobWithHistory[]> {
+    const none = noneState
+      ? {
+          none: {
+            state: noneState,
+          },
+        }
+      : {};
+
+    return this.prisma.job.findMany({
+      where: {
+        user_id: userId,
+        AND: [
+          {
+            jobHistory: {
+              some: {
+                state: state,
+                timestamp: {
+                  gte: initDate,
+                  lte: endDate,
+                },
+              },
+              ...none,
+            },
+          },
+          {
+            jobHistory: {
+              some: {
+                state: containState,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        jobHistory: true,
       },
     });
   }

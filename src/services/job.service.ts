@@ -1,7 +1,7 @@
 import { Job, JobHistory } from "../../generated/prisma/client";
 import { JobState } from "../../generated/prisma/enums";
 import { JobRepository } from "../repositories/job.repository";
-import { JobWithTechsAndHistory } from "../types/prisma";
+import { JobWithHistory, JobWithTechsAndHistory } from "../types/prisma";
 import { CustomError } from "../utils/customError";
 
 export class JobService implements JobRepository {
@@ -113,5 +113,23 @@ export class JobService implements JobRepository {
 
   async addHistoryEntry(jobId: number, state: JobState): Promise<JobHistory> {
     return this.jobRepo.addHistoryEntry(jobId, state);
+  }
+
+  getEvents(
+    userId: number,
+    state: JobState,
+    containState: JobState,
+    initDate: Date,
+    endDate: Date,
+    noneState?: JobState,
+  ): Promise<JobWithHistory[]> {
+    return this.jobRepo.getEvents(
+      userId,
+      state,
+      containState,
+      initDate,
+      endDate,
+      noneState,
+    );
   }
 }

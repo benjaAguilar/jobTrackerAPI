@@ -1,6 +1,6 @@
 import { Job, JobHistory } from "../../generated/prisma/client";
 import { JobState } from "../../generated/prisma/enums";
-import { JobWithTechsAndHistory } from "../types/prisma";
+import { JobWithTechsAndHistory, JobWithHistory } from "../types/prisma";
 
 export interface JobRepository {
   create(data: {
@@ -34,4 +34,13 @@ export interface JobRepository {
   addHistoryEntry(jobId: number, state: JobState): Promise<JobHistory>;
 
   deleteJob(jobId: number, userId: number): Promise<Job>;
+
+  getEvents(
+    userId: number,
+    state: JobState,
+    containState: JobState,
+    initDate: Date,
+    endDate: Date,
+    noneState?: JobState,
+  ): Promise<JobWithHistory[]>;
 }
