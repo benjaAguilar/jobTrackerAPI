@@ -62,7 +62,7 @@ export const update = [
     const jobId = parseParamId(req.params.jobId);
     const { user } = req as AuthenticatedRequest;
 
-    const { vacantName, company, notes, state } = req.body;
+    const { vacantName, company, notes, state, rejectionReason } = req.body;
     const techs = req.body.techs ? req.body.techs : '["other"]';
 
     const { jobService, techService } = req.app.locals.services as Services;
@@ -74,6 +74,7 @@ export const update = [
       notes: notes,
       state: state,
       techs: techsIds,
+      rejectionReason: rejectionReason,
     });
 
     res.json({
