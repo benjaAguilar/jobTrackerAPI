@@ -10,3 +10,9 @@ export type JobWithTechsAndHistory = Prisma.JobGetPayload<{
     jobHistory: true;
   };
 }>;
+
+export type JobWithHistory = Prisma.JobGetPayload<{
+  include: {
+    jobHistory: true;
+  };
+}>;
