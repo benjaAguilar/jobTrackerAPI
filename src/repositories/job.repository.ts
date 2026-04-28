@@ -1,6 +1,6 @@
-import { Job } from "../../generated/prisma/client";
+import { Job, JobHistory } from "../../generated/prisma/client";
 import { JobState } from "../../generated/prisma/enums";
-import { JobWithTechs } from "../types/prisma";
+import { JobWithTechsAndHistory } from "../types/prisma";
 
 export interface JobRepository {
   create(data: {
@@ -15,7 +15,7 @@ export interface JobRepository {
 
   getJobs(userId: number, state: JobState | undefined): Promise<Job[]>;
 
-  getJobById(jobId: number): Promise<JobWithTechs | null>;
+  getJobById(jobId: number): Promise<JobWithTechsAndHistory | null>;
 
   updateJob(
     jobId: number,
@@ -29,6 +29,9 @@ export interface JobRepository {
       state: JobState;
     },
   ): Promise<Job>;
+
+  removeHistoryEntry(historyId: number): Promise<JobHistory>;
+  addHistoryEntry(jobId: number, state: JobState): Promise<JobHistory>;
 
   deleteJob(jobId: number, userId: number): Promise<Job>;
 }
