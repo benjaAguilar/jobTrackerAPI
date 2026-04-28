@@ -38,7 +38,7 @@ model JobHistory {
   id        Int      @id @default(autoincrement())
   timestamp DateTime @default(now())
   state     JobState
-  job       Job      @relation(fields: [job_id], references: [id])
+  job       Job      @relation(fields: [job_id], references: [id], onDelete: Cascade)
   job_id    Int
 }
 
