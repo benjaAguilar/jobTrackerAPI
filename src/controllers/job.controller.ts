@@ -4,7 +4,7 @@ import { Services } from "../services";
 import { AuthenticatedRequest, Request, Response } from "../types/express";
 import { tryCatch } from "../utils/errorCatch";
 import { parseParamId } from "../utils/utils";
-import { validateCreateJob } from "../utils/validator";
+import { validateCreateJob, validateGetJobEvent } from "../utils/validator";
 
 export const create = [
   ...validateCreateJob,
@@ -53,6 +53,36 @@ export const getJobs = tryCatch(async (req: Request, res: Response) => {
     jobs: jobs,
   });
 });
+
+export const getJobEvents = [
+  ...validateGetJobEvent,
+  tryCatch(async (req: Request, res: Response) => {
+    getValidationRes(req);
+
+    const { state, containState, from, to, noneState } = req.query;
+
+    const { user } = req as AuthenticatedRequest;
+    const { jobService } = req.app.locals.services as Services;
+
+    const initDate = new Date(typeof from === "string" ? from : "");
+    const endDate = new Date(typeof to === "string" ? to : "");
+
+    const jobs = await jobService.getEvents(
+      user.id,
+      state as JobState,
+      containState as JobState,
+      initDate,
+      endDate,
+      noneState as JobState | undefined,
+    );
+
+    res.json({
+      success: true,
+      message: `retrieved jobs successfully`,
+      jobs: jobs,
+    });
+  }),
+];
 
 export const update = [
   ...validateCreateJob,
