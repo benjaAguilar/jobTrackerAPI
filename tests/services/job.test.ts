@@ -1,8 +1,11 @@
+import e from "express";
 import { JobRepository } from "../../src/repositories/job.repository";
 import { JobService } from "../../src/services/job.service";
-import { JobWithTechs } from "../../src/types/prisma";
+import { JobWithTechsAndHistory } from "../../src/types/prisma";
 
-const createMockJob = (overrides?: Partial<JobWithTechs>): JobWithTechs => ({
+const createMockJob = (
+  overrides?: Partial<JobWithTechsAndHistory>,
+): JobWithTechsAndHistory => ({
   id: 1,
   vacantName: "test",
   company: "test",
@@ -11,6 +14,7 @@ const createMockJob = (overrides?: Partial<JobWithTechs>): JobWithTechs => ({
   rejectionReason: null,
   user_id: 1,
   techsRequired: [],
+  jobHistory: [],
   ...overrides,
 });
 const repoMock: jest.Mocked<JobRepository> = {
@@ -22,6 +26,8 @@ const repoMock: jest.Mocked<JobRepository> = {
     return createMockJob(mockData);
   }),
   deleteJob: jest.fn(async (id, _userId) => createMockJob({ id: id })),
+  addHistoryEntry: jest.fn(),
+  removeHistoryEntry: jest.fn(),
 };
 const jobService = new JobService(repoMock);
 
@@ -212,6 +218,102 @@ describe("JobService", () => {
           techs: [1, 5, 13],
         }),
       ).rejects.toThrow("Job not found");
+    });
+
+    it("should delete all greater history and leave existent indicated one", async () => {
+      repoMock.getJobById.mockImplementationOnce(async () =>
+        createMockJob({
+          state: "rejected",
+          jobHistory: [
+            {
+              id: 1,
+              timestamp: new Date(),
+              state: "offer",
+              job_id: 3,
+            },
+            {
+              id: 2,
+              timestamp: new Date(),
+              state: "applied",
+              job_id: 3,
+            },
+            {
+              id: 3,
+              timestamp: new Date(),
+              state: "rejected",
+              job_id: 3,
+            },
+          ],
+        }),
+      );
+
+      await jobService.updateJob(3, 1, {
+        vacantName: "devops",
+        company: "pea",
+        state: "offer",
+        techs: [1, 5, 13],
+      });
+
+      expect(repoMock.removeHistoryEntry).toHaveBeenCalledTimes(2);
+      expect(repoMock.addHistoryEntry).not.toHaveBeenCalled();
+    });
+
+    it("should delete all greater history and create unexistent", async () => {
+      repoMock.getJobById.mockImplementationOnce(async () =>
+        createMockJob({
+          state: "rejected",
+          jobHistory: [
+            {
+              id: 2,
+              timestamp: new Date(),
+              state: "applied",
+              job_id: 3,
+            },
+            {
+              id: 3,
+              timestamp: new Date(),
+              state: "rejected",
+              job_id: 3,
+            },
+          ],
+        }),
+      );
+
+      await jobService.updateJob(3, 1, {
+        vacantName: "devops",
+        company: "pea",
+        state: "offer",
+        techs: [1, 5, 13],
+      });
+
+      expect(repoMock.removeHistoryEntry).toHaveBeenCalledTimes(2);
+      expect(repoMock.addHistoryEntry).toHaveBeenCalledTimes(1);
+    });
+
+    it("should create a greater history", async () => {
+      repoMock.getJobById.mockImplementationOnce(async () =>
+        createMockJob({
+          state: "applied",
+          jobHistory: [
+            {
+              id: 2,
+              timestamp: new Date(),
+              state: "applied",
+              job_id: 3,
+            },
+          ],
+        }),
+      );
+
+      await jobService.updateJob(3, 1, {
+        vacantName: "devops",
+        company: "pea",
+        state: "rejected",
+        techs: [1, 5, 13],
+      });
+
+      expect(repoMock.removeHistoryEntry).not.toHaveBeenCalled();
+      expect(repoMock.addHistoryEntry).toHaveBeenCalledTimes(1);
     });
   });
 
