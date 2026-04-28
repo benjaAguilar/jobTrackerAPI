@@ -22,15 +22,24 @@ model User {
 }
 
 model Job {
-  id              Int        @id @default(autoincrement())
+  id              Int          @id @default(autoincrement())
   vacantName      String
   company         String
   notes           String?
   techsRequired   Job_tech[]
   state           JobState
+  jobHistory      JobHistory[]
   rejectionReason String?
-  user            User       @relation(fields: [user_id], references: [id])
+  user            User         @relation(fields: [user_id], references: [id])
   user_id         Int
+}
+
+model JobHistory {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now())
+  state     JobState
+  job       Job      @relation(fields: [job_id], references: [id])
+  job_id    Int
 }
 
 model Job_tech {
