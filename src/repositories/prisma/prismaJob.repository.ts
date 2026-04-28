@@ -1,5 +1,10 @@
-import { Job, JobState, PrismaClient } from "../../../generated/prisma/client";
-import { JobWithTechs } from "../../types/prisma";
+import {
+  Job,
+  JobHistory,
+  JobState,
+  PrismaClient,
+} from "../../../generated/prisma/client";
+import { JobWithTechsAndHistory } from "../../types/prisma";
 import { JobRepository } from "../job.repository";
 
 export class PrismaJob implements JobRepository {
@@ -29,11 +34,14 @@ export class PrismaJob implements JobRepository {
         techsRequired: {
           create: data.techs.map((techId) => ({ tech_id: techId })),
         },
+        jobHistory: {
+          create: { state: data.state },
+        },
       },
     });
   }
 
-  getJobById(jobId: number): Promise<JobWithTechs | null> {
+  getJobById(jobId: number): Promise<JobWithTechsAndHistory | null> {
     return this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
@@ -42,6 +50,7 @@ export class PrismaJob implements JobRepository {
             tech: true,
           },
         },
+        jobHistory: true,
       },
     });
   }
@@ -55,6 +64,7 @@ export class PrismaJob implements JobRepository {
             tech: true,
           },
         },
+        jobHistory: true,
       },
     });
   }
@@ -89,5 +99,18 @@ export class PrismaJob implements JobRepository {
 
   deleteJob(jobId: number, userId: number): Promise<Job> {
     return this.prisma.job.delete({ where: { id: jobId, user_id: userId } });
+  }
+
+  removeHistoryEntry(historyId: number): Promise<JobHistory> {
+    return this.prisma.jobHistory.delete({ where: { id: historyId } });
+  }
+
+  addHistoryEntry(jobId: number, state: JobState): Promise<JobHistory> {
+    return this.prisma.jobHistory.create({
+      data: {
+        job_id: jobId,
+        state: state,
+      },
+    });
   }
 }
