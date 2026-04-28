@@ -1,4 +1,5 @@
-import { body } from "express-validator";
+import e from "express";
+import { body, query } from "express-validator";
 
 export const validateRegister = [
   body("username")
@@ -66,4 +67,64 @@ export const validateCreateJob = [
       return true;
     })
     .withMessage("Please provide a valid job state"),
+];
+
+export const validateGetJobEvent = [
+  query("state")
+    .trim()
+    .notEmpty()
+    .withMessage("Job state is required")
+    .custom((val: string) => {
+      const enums = ["offer", "applied", "interview", "rejected"];
+      const [isValidEnum] = enums.filter((enu) => val === enu);
+
+      if (!isValidEnum) return false;
+
+      return true;
+    })
+    .withMessage("Please provide a valid job state"),
+  query("containState")
+    .trim()
+    .notEmpty()
+    .withMessage("Job state is required")
+    .custom((val: string) => {
+      const enums = ["offer", "applied", "interview", "rejected"];
+      const [isValidEnum] = enums.filter((enu) => val === enu);
+
+      if (!isValidEnum) return false;
+
+      return true;
+    })
+    .withMessage("Please provide a valid job state"),
+  query("noneState")
+    .trim()
+    .custom((val: string | undefined) => {
+      if (!val) return true;
+
+      const enums = ["offer", "applied", "interview", "rejected"];
+      const [isValidEnum] = enums.filter((enu) => val === enu);
+
+      if (!isValidEnum) return false;
+
+      return true;
+    })
+    .withMessage("Please provide a valid job state"),
+  query("from")
+    .trim()
+    .notEmpty()
+    .custom((val: string) => {
+      const date = new Date(val);
+      if (date.toUTCString() === "Invalid Date") return false;
+      return true;
+    })
+    .withMessage("Please provide a valid date"),
+  query("to")
+    .trim()
+    .notEmpty()
+    .custom((val: string) => {
+      const date = new Date(val);
+      if (date.toUTCString() === "Invalid Date") return false;
+      return true;
+    })
+    .withMessage("Please provide a valid date"),
 ];
