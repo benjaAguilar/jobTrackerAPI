@@ -1,7 +1,7 @@
-import { Job } from "../../generated/prisma/client";
+import { Job, JobHistory } from "../../generated/prisma/client";
 import { JobState } from "../../generated/prisma/enums";
 import { JobRepository } from "../repositories/job.repository";
-import { JobWithTechs } from "../types/prisma";
+import { JobWithTechsAndHistory } from "../types/prisma";
 import { CustomError } from "../utils/customError";
 
 export class JobService implements JobRepository {
@@ -33,7 +33,7 @@ export class JobService implements JobRepository {
     return this.jobRepo.getJobs(userId, isValidEnum);
   }
 
-  async getJobById(jobId: number): Promise<JobWithTechs | null> {
+  async getJobById(jobId: number): Promise<JobWithTechsAndHistory | null> {
     return this.jobRepo.getJobById(jobId);
   }
 
@@ -49,6 +49,12 @@ export class JobService implements JobRepository {
       state: JobState;
     },
   ): Promise<Job> {
+    const enumsByOrder: JobState[] = [
+      "offer",
+      "applied",
+      "interview",
+      "rejected",
+    ];
     const job = await this.jobRepo.getJobById(jobId);
 
     if (!job) throw new CustomError("Job not found", 404);
@@ -57,8 +63,27 @@ export class JobService implements JobRepository {
     }
 
     // instead of throw an error we can just set rejectionReason to undefined;
-    if (data.state !== "rejected" && data.rejectionReason)
+    if (data.state !== "rejected" && data.rejectionReason) {
       data.rejectionReason = undefined;
+    }
+
+    //TODO: Refactor this messy block of code
+    if (enumsByOrder.indexOf(data.state) < enumsByOrder.indexOf(job.state)) {
+      const historyToDelete = job.jobHistory.filter(
+        (history) =>
+          enumsByOrder.indexOf(history.state) >
+          enumsByOrder.indexOf(data.state),
+      );
+      await this.removeMultipleHistoryEntry(historyToDelete);
+      const [exist] = job.jobHistory.filter(
+        (history) => data.state === history.state,
+      );
+      if (!exist) await this.jobRepo.addHistoryEntry(jobId, data.state);
+    } else if (
+      enumsByOrder.indexOf(data.state) > enumsByOrder.indexOf(job.state)
+    ) {
+      await this.jobRepo.addHistoryEntry(jobId, data.state);
+    }
 
     return this.jobRepo.updateJob(jobId, userId, data);
   }
@@ -72,5 +97,21 @@ export class JobService implements JobRepository {
       throw new CustomError("Unauthorized to delete this job", 401);
     }
     return this.jobRepo.deleteJob(jobId, userId);
+  }
+
+  async removeMultipleHistoryEntry(historyArr: JobHistory[]): Promise<void> {
+    await Promise.all(
+      historyArr.map(async (val) => {
+        await this.jobRepo.removeHistoryEntry(val.id);
+      }),
+    );
+  }
+
+  async removeHistoryEntry(historyId: number): Promise<JobHistory> {
+    return this.jobRepo.removeHistoryEntry(historyId);
+  }
+
+  async addHistoryEntry(jobId: number, state: JobState): Promise<JobHistory> {
+    return this.jobRepo.addHistoryEntry(jobId, state);
   }
 }
