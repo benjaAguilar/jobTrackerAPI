@@ -1,4 +1,3 @@
-import e from "express";
 import { body, query } from "express-validator";
 
 export const validateRegister = [
